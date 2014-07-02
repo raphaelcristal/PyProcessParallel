@@ -42,25 +42,70 @@ def consume_result(results, result_consumer, num_workers):
             break
 
 
-def process_parallel(work_generator, job_consumer, result_consumer,
-                     workers=cpu_count(), maxsize_jobs=0, maxsize_results=0):
-    jobs = Queue(maxsize=maxsize_jobs)
-    results = JoinableQueue(maxsize_results)
+class Task(object):
 
-    t = Thread(target=consume_result, args=(results, result_consumer,
-                                            workers))
-    t.daemon = True
-    t.start()
+    def __init__(self, work, workers):
+        self.work = work
+        self.workers = workers
 
-    for _ in xrange(workers):
-        Process(target=work, args=(jobs, results, job_consumer)).start()
 
-    for w in work_generator():
-        jobs.put(w)
+class TaskChain(object):
 
-    for _ in xrange(workers):
-        jobs.put(StopSignal)
+    def __init__(self, producer, consumer):
+        self.producer = producer
+        self.consumer = consumer
+        self.tasks = []
 
-    results.join()
-    jobs.close()
-    t.join()
+    def work(self, maxsize_jobs=0, maxsize_results=0):
+        if not self.tasks:
+            raise ValueError('You need at least one task, use add_task!')
+
+        jobs_queue = Queue(maxsize=maxsize_jobs)
+        results_queue = JoinableQueue(maxsize_results)
+        #start the consumer
+        #it will recieve as many StopSignals,
+        #as there are workers in the last task
+        last_task = self.tasks[-1]
+        t = Thread(target=consume_result, args=(results_queue, self.consumer,
+                                                last_task.workers))
+        t.daemon = True
+        t.start()
+
+        first_task = self.tasks[0]
+        for w in self.producer:
+            jobs_queue.put(w)
+
+        for _ in xrange(first_task.workers):
+            jobs_queue.put(StopSignal)
+
+        #collect all output queues, so we can call join later
+        out_queues = []
+        #the input from the previous worker,
+        #will be the input to the next worker
+        previous_output = None
+        for i, task in enumerate(self.tasks):
+            #if it is the first task, recieve input from the producer
+            if i == 0:
+                input_q = jobs_queue
+            else:
+                input_q = previous_output
+            #if it is the last task, send output to consumer
+            if i == len(self.tasks) - 1:
+                output_q = results_queue
+            else:
+                output_q = JoinableQueue()
+                out_queues.append(output_q)
+                previous_output = output_q
+            for _ in xrange(task.workers):
+                Process(target=work,
+                        args=(input_q, output_q, task.work)).start()
+
+        results_queue.join()
+        for out_queue in out_queues:
+            out_queue.join()
+        jobs_queue.close()
+        t.join()
+
+    def add_task(self, task, workers=1):
+        ta = Task(task, workers)
+        self.tasks.append(ta)

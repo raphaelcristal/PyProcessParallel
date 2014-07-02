@@ -1,4 +1,4 @@
-from process_parallel import process_parallel
+from process_parallel import TaskChain
 
 if __name__ == '__main__':
 
@@ -12,15 +12,16 @@ if __name__ == '__main__':
         for text in texts:
             yield text
 
-    def work_processor(line):
+    def w1(line):
         return line.split()
 
-    out = open('tokens.txt', 'w')
+    def w2(tokens):
+        return tokens*10
 
     def result_consumer(tokens):
-        for token in tokens:
-            out.write('%s\n' % token)
+        print tokens
 
-    process_parallel(work_generator, work_processor, result_consumer)
-
-    out.close()
+    task_chain = TaskChain(work_generator(), result_consumer)
+    task_chain.add_task(w1)
+    task_chain.add_task(w2)
+    task_chain.work()
