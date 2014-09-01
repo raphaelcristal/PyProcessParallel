@@ -1,7 +1,7 @@
-PyProcessParallel
+﻿PyProcessParallel
 =================
 
-PyProcessParallel is a little library which helps with writing parallel and memory controlled python code. It was manly used for preprocessing tasks, where the dataset was to large to load into memory.
+PyProcessParallel is a little library which helps with writing parallel and memory controlled python code. It was mainly used for preprocessing tasks, where the dataset was too large to load into memory.
 
 ## Data flow
 PyProcessParallel expects you to write three functions:
@@ -13,7 +13,7 @@ Each one of these components is connected via a queue, whose size can be control
 
 ## How to use
 
-For a simpe example we will write a script which will tokenize some strings and write them to a file. You can find this example in example.py. First we will write the work_generator. The work_generator can either by a function with uses the keyword yield or an class which implements \__iter\__:
+For a simple example we will write a script which will tokenize some strings and write them to a file. You can find this example in example.py. First we will write the work_generator. The work_generator needs to be an iterable, in the example a python generator is used:
 
 ```python
 texts = [
@@ -47,13 +47,13 @@ out.close()
 ```
 
 ## Memory Consumption
-If your memory consumption you can limit the size of the queues. If your workers are not fast enough you should lower the maxsize_jobs paremeter. If your result_consumer is too slow the you should lower the maxsize_results parameter.
+If your memory consumption is too high you can limit the size of the queues. If your workers are not fast enough you should lower the maxsize_jobs parameter. If your result_consumer is too slow the you should lower the maxsize_results parameter.
 ```python
 process_parallel(work_generator, work_processor, result_consumer, maxsize_jobsize=100, maxsize_results=100)
 ```
 
 ## Workers
-By default PyProcessParallel uses as many workers as you have cores. You can change this behaviour by calling the library like this:
+By default PyProcessParallel uses as many workers as you have cores. You can change this behavior by calling the library like this:
 ```python
 process_parallel(work_generator, work_processor, result_consumer, workers=2)
 ```
