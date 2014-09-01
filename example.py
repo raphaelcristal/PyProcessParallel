@@ -21,6 +21,6 @@ if __name__ == '__main__':
         for token in tokens:
             out.write('%s\n' % token)
 
-    process_parallel(work_generator, work_processor, result_consumer)
+    process_parallel(work_generator(), work_processor, result_consumer)
 
     out.close()

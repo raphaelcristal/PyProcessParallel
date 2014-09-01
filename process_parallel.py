@@ -55,7 +55,7 @@ def process_parallel(work_generator, job_consumer, result_consumer,
     for _ in xrange(workers):
         Process(target=work, args=(jobs, results, job_consumer)).start()
 
-    for w in work_generator():
+    for w in work_generator:
         jobs.put(w)
 
     for _ in xrange(workers):
