@@ -41,7 +41,7 @@ out = open('tokens.txt', 'w')
 
 Now we can call the library and process our data. After the call has finished you can still make some cleanup calls like write some data or close file handles.
 ```python
-process_parallel(work_generator, work_processor, result_consumer)
+process_parallel(work_generator(), work_processor, result_consumer)
 #do your clean up here
 out.close()
 ```
@@ -49,12 +49,12 @@ out.close()
 ## Memory Consumption
 If your memory consumption is too high you can limit the size of the queues. If your workers are not fast enough you should lower the maxsize_jobs parameter. If your result_consumer is too slow the you should lower the maxsize_results parameter.
 ```python
-process_parallel(work_generator, work_processor, result_consumer, maxsize_jobsize=100, maxsize_results=100)
+process_parallel(work_generator(), work_processor, result_consumer, maxsize_jobsize=100, maxsize_results=100)
 ```
 
 ## Workers
 By default PyProcessParallel uses as many workers as you have cores. You can change this behavior by calling the library like this:
 ```python
-process_parallel(work_generator, work_processor, result_consumer, workers=2)
+process_parallel(work_generator(), work_processor, result_consumer, workers=2)
 ```
 
