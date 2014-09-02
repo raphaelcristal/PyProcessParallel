@@ -34,9 +34,9 @@ def work_processor(line):
 In the last step the results will be writen as one token per line.
 ```python
 out = open('tokens.txt', 'w')
-  def result_consumer(tokens):
-    for token in tokens:
-      out.write('%s\n' % token)
+def result_consumer(tokens):
+  for token in tokens:
+    out.write('%s\n' % token)
 ```
 
 Now we can call the library and process our data. After the call has finished you can still make some cleanup calls like write some data or close file handles.
